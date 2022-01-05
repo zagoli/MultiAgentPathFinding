@@ -30,6 +30,11 @@ class PrioritizedPlanningSolver(object):
         result = []
         constraints = []
 
+        # example of constraint for task 1.2
+        constraints.append(
+            {'agent': 0, 'loc': [(1, 5)], 'timestep': 4}
+        )
+
         for i in range(self.num_of_agents):  # Find path for each agent
             path = a_star(self.my_map, self.starts[i], self.goals[i], self.heuristics[i],
                           i, constraints)
@@ -43,7 +48,6 @@ class PrioritizedPlanningSolver(object):
             #            * path contains the solution path of the current (i'th) agent, e.g., [(1,1),(1,2),(1,3)]
             #            * self.num_of_agents has the number of total agents
             #            * constraints: array of constraints to consider for future A* searches
-
 
             ##############################
 

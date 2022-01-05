@@ -54,8 +54,16 @@ def build_constraint_table(constraints, agent):
     #               the given agent for each time step. The table can be used
     #               for a more efficient constraint violation check in the 
     #               is_constrained function.
-
-    pass
+    c_table = dict()
+    for c in constraints:
+        # we need to consider only the constraints for the given agent
+        if c['agent'] == agent:
+            timestep = c['timestep']
+            if timestep in c_table:
+                c_table[timestep].append(c)
+            else:
+                c_table[timestep] = [c]
+    return c_table
 
 
 def get_location(path, time):
@@ -82,8 +90,14 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     # Task 1.2/1.3: Check if a move from curr_loc to next_loc at time step next_time violates
     #               any given constraint. For efficiency the constraints are indexed in a constraint_table
     #               by time step, see build_constraint_table.
-
-    pass
+    constrained = False
+    if next_time in constraint_table:
+        constraints = constraint_table[next_time]
+        for c in constraints:
+            if next_loc in c['loc']:
+                constrained = True
+                break
+    return constrained
 
 
 def push_node(open_list, node):
@@ -116,6 +130,7 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     closed_list = dict()
     earliest_goal_timestep = 0
     h_value = h_values[start_loc]
+    c_table = build_constraint_table(constraints, agent)
     root = {'loc': start_loc, 'g_val': 0, 'h_val': h_value, 'parent': None, 'time': 0}
     push_node(open_list, root)
     closed_list[(start_loc, 0)] = root
@@ -129,8 +144,8 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
             # directions 0-3: the agent is moving, direction 4: the agent is still
             if direction < 4:
                 child_loc = move(curr['loc'], direction)
+                # the agent wants to go against an obstacle
                 if my_map[child_loc[0]][child_loc[1]]:
-                    # the agent wants to go against an obstacle
                     continue
                 child = {'loc': child_loc,
                          'g_val': curr['g_val'] + 1,
@@ -144,6 +159,9 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
                          'h_val': h_values[curr['loc']],
                          'parent': curr,
                          'time': curr['time'] + 1}
+            # check if the child violates the constraints
+            if is_constrained(curr['loc'], child['loc'], child['time'], c_table):
+                continue
             if (child['loc'], child['time']) in closed_list:
                 existing_node = closed_list[(child['loc'], child['time'])]
                 if compare_nodes(child, existing_node):
