@@ -1,5 +1,6 @@
 import heapq
 
+
 def move(loc, dir):
     directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
     return loc[0] + directions[dir][0], loc[1] + directions[dir][1]
@@ -25,8 +26,8 @@ def compute_heuristics(my_map, goal):
             child_loc = move(loc, dir)
             child_cost = cost + 1
             if child_loc[0] < 0 or child_loc[0] >= len(my_map) \
-               or child_loc[1] < 0 or child_loc[1] >= len(my_map[0]):
-               continue
+                    or child_loc[1] < 0 or child_loc[1] >= len(my_map[0]):
+                continue
             if my_map[child_loc[0]][child_loc[1]]:
                 continue
             child = {'loc': child_loc, 'cost': child_cost}
@@ -115,30 +116,41 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
     closed_list = dict()
     earliest_goal_timestep = 0
     h_value = h_values[start_loc]
-    root = {'loc': start_loc, 'g_val': 0, 'h_val': h_value, 'parent': None}
+    root = {'loc': start_loc, 'g_val': 0, 'h_val': h_value, 'parent': None, 'time': 0}
     push_node(open_list, root)
-    closed_list[(root['loc'])] = root
+    closed_list[(start_loc, 0)] = root
     while len(open_list) > 0:
         curr = pop_node(open_list)
         #############################
         # Task 1.4: Adjust the goal test condition to handle goal constraints
         if curr['loc'] == goal_loc:
             return get_path(curr)
-        for dir in range(4):
-            child_loc = move(curr['loc'], dir)
-            if my_map[child_loc[0]][child_loc[1]]:
-                continue
-            child = {'loc': child_loc,
-                    'g_val': curr['g_val'] + 1,
-                    'h_val': h_values[child_loc],
-                    'parent': curr}
-            if (child['loc']) in closed_list:
-                existing_node = closed_list[(child['loc'])]
+        for direction in range(5):
+            # directions 0-3: the agent is moving, direction 4: the agent is still
+            if direction < 4:
+                child_loc = move(curr['loc'], direction)
+                if my_map[child_loc[0]][child_loc[1]]:
+                    # the agent wants to go against an obstacle
+                    continue
+                child = {'loc': child_loc,
+                         'g_val': curr['g_val'] + 1,
+                         'h_val': h_values[child_loc],
+                         'parent': curr,
+                         'time': curr['time'] + 1}
+            else:
+                # the agent remains still
+                child = {'loc': curr['loc'],
+                         'g_val': curr['g_val'],  # the cost to remain still doesn't increas
+                         'h_val': h_values[curr['loc']],
+                         'parent': curr,
+                         'time': curr['time'] + 1}
+            if (child['loc'], child['time']) in closed_list:
+                existing_node = closed_list[(child['loc'], child['time'])]
                 if compare_nodes(child, existing_node):
-                    closed_list[(child['loc'])] = child
+                    closed_list[(child['loc'], child['time'])] = child
                     push_node(open_list, child)
             else:
-                closed_list[(child['loc'])] = child
+                closed_list[(child['loc'], child['time'])] = child
                 push_node(open_list, child)
 
     return None  # Failed to find solutions
