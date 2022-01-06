@@ -32,12 +32,19 @@ class PrioritizedPlanningSolver(object):
 
         # example of constraint for task 1.2
         constraints.append(
-            {'agent': 0, 'loc': [(1, 5)], 'timestep': 4}
+            {'agent': 0,
+             'loc': [(1, 5)],
+             'timestep': 4}
+        )
+        # constraint for task 1.3
+        constraints.append(
+            {'agent': 1,
+             'loc': [(1, 2), (1, 3)],
+             'timestep': 1}
         )
 
         for i in range(self.num_of_agents):  # Find path for each agent
-            path = a_star(self.my_map, self.starts[i], self.goals[i], self.heuristics[i],
-                          i, constraints)
+            path = a_star(self.my_map, self.starts[i], self.goals[i], self.heuristics[i], i, constraints)
             if path is None:
                 raise BaseException('No solutions')
             result.append(path)

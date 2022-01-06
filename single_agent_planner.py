@@ -1,9 +1,9 @@
 import heapq
 
 
-def move(loc, dir):
+def move(loc, direction):
     directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
-    return loc[0] + directions[dir][0], loc[1] + directions[dir][1]
+    return loc[0] + directions[direction][0], loc[1] + directions[direction][1]
 
 
 def get_sum_of_cost(paths):
@@ -22,8 +22,8 @@ def compute_heuristics(my_map, goal):
     closed_list[goal] = root
     while len(open_list) > 0:
         (cost, loc, curr) = heapq.heappop(open_list)
-        for dir in range(4):
-            child_loc = move(loc, dir)
+        for direction in range(4):
+            child_loc = move(loc, direction)
             child_cost = cost + 1
             if child_loc[0] < 0 or child_loc[0] >= len(my_map) \
                     or child_loc[1] < 0 or child_loc[1] >= len(my_map[0]):
@@ -59,10 +59,10 @@ def build_constraint_table(constraints, agent):
         # we need to consider only the constraints for the given agent
         if c['agent'] == agent:
             timestep = c['timestep']
-            if timestep in c_table:
-                c_table[timestep].append(c)
-            else:
+            if timestep not in c_table:
                 c_table[timestep] = [c]
+            else:
+                c_table[timestep].append(c)
     return c_table
 
 
@@ -94,7 +94,7 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     if next_time in constraint_table:
         constraints = constraint_table[next_time]
         for c in constraints:
-            if next_loc in c['loc']:
+            if [next_loc] == c['loc'] or [curr_loc, next_loc] == c['loc']:
                 constrained = True
                 break
     return constrained
@@ -128,7 +128,6 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
 
     open_list = []
     closed_list = dict()
-    earliest_goal_timestep = 0
     h_value = h_values[start_loc]
     c_table = build_constraint_table(constraints, agent)
     root = {'loc': start_loc, 'g_val': 0, 'h_val': h_value, 'parent': None, 'time': 0}
@@ -155,8 +154,8 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
             else:
                 # the agent remains still
                 child = {'loc': curr['loc'],
-                         'g_val': curr['g_val'],  # the cost to remain still doesn't increas
-                         'h_val': h_values[curr['loc']],
+                         'g_val': curr['g_val'] + 1,  # remaining in the same cell has a cost
+                         'h_val': curr['h_val'],
                          'parent': curr,
                          'time': curr['time'] + 1}
             # check if the child violates the constraints
