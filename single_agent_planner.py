@@ -86,7 +86,11 @@ def get_path(goal_node):
 
 
 def flatten_constraints(list_of_constraints_list):
-    return [c for constraint_list in list_of_constraints_list for c in constraint_list]
+    constraints = []
+    for constr_list in list_of_constraints_list:
+        for c in constr_list:
+            constraints.append(c)
+    return constraints
 
 
 def is_constrained(curr_loc, next_loc, next_time, constraint_table):
