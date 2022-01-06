@@ -1,7 +1,7 @@
 # MultiAgentPathFinding
 Progetto per l'esame di fondamenti di intelligenza artificiale, A.A. 2021/2022.
 http://idm-lab.org/project-p/project.html  
-## Space time A*
+## Space-time A*
 L'implementazione corrente di A* cerca un percorso solo nelle celle, tralasciando 
 di considerare la posizione di un agente ad un determinato timestamp.  
 Dobbiamo quindi modificare l'algoritmo in modo che cerchi un percorso nell'insieme di 
@@ -17,3 +17,6 @@ nodo e del parent, controlla se viene violato un constraint presente
 nella tabella costruita sopra.
 Per ora gli unici tipi di constraint considerati sono vertex constraints.
 #### Task 1.3
+Aggiunto il support per gli edge constraint: l'unica funzione modificata
+è is_constrained, che data la posizione corrente, futura e il timestamp
+verifica se il nodo viola almeno uno dei due tipi di constraint.

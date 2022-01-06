@@ -90,14 +90,27 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     # Task 1.2/1.3: Check if a move from curr_loc to next_loc at time step next_time violates
     #               any given constraint. For efficiency the constraints are indexed in a constraint_table
     #               by time step, see build_constraint_table.
-    constrained = False
     if next_time in constraint_table:
         constraints = constraint_table[next_time]
         for c in constraints:
             if [next_loc] == c['loc'] or [curr_loc, next_loc] == c['loc']:
-                constrained = True
-                break
-    return constrained
+                return True
+    return False
+
+
+def is_goal_constrained(goal_loc, timestamp, constraint_table):
+    """
+    checks if there's a constraint on the goal in the future.
+    goal_loc            - goal location
+    timestamp           - current timestamp
+    constraint_table    - generated constraint table for current agent
+    """
+    constraint_table = {t: c for t, c in constraint_table.items() if t > timestamp}
+    for t in constraint_table:
+        for c in constraint_table[t]:
+            if [goal_loc] == c['loc']:
+                return True
+    return False
 
 
 def push_node(open_list, node):
@@ -137,7 +150,7 @@ def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
         curr = pop_node(open_list)
         #############################
         # Task 1.4: Adjust the goal test condition to handle goal constraints
-        if curr['loc'] == goal_loc:
+        if curr['loc'] == goal_loc and not is_goal_constrained(goal_loc, curr['time'], c_table):
             return get_path(curr)
         for direction in range(5):
             # directions 0-3: the agent is moving, direction 4: the agent is still
