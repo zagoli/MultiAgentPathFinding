@@ -50,10 +50,15 @@ class PrioritizedPlanningSolver(object):
                 for a in range(self.num_of_agents):
                     if a != i:
                         # vertex constraint
+                        # if this is the last location in the path, we add a final constraint
+                        final = False
+                        if time == len(path) - 1:
+                            final = True
                         constraints.append({
                             'agent': a,
                             'loc': [loc],
-                            'timestep': time
+                            'timestep': time,
+                            'final': final
                         })
                         # edge constraint
                         # the agent can't be at the last position to add an edge constraint
@@ -63,7 +68,8 @@ class PrioritizedPlanningSolver(object):
                             constraints.append({
                                 'agent': a,
                                 'loc': [nextloc, loc],
-                                'timestep': time + 1
+                                'timestep': time + 1,
+                                'final': False
                             })
 
         self.CPU_time = timer.time() - start_time

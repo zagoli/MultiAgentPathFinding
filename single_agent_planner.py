@@ -85,6 +85,10 @@ def get_path(goal_node):
     return path
 
 
+def flatten_constraints(list_of_constraints_list):
+    return [c for constraint_list in list_of_constraints_list for c in constraint_list]
+
+
 def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     ##############################
     # Task 1.2/1.3: Check if a move from curr_loc to next_loc at time step next_time violates
@@ -95,6 +99,12 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
         for c in constraints:
             if [next_loc] == c['loc'] or [curr_loc, next_loc] == c['loc']:
                 return True
+    else:
+        constraints = [c for t, c in constraint_table.items() if t < next_time]
+        constraints = flatten_constraints(constraints)
+        for c in constraints:
+            if [next_loc] == c['loc'] and c['final']:
+                return True
     return False
 
 
@@ -102,14 +112,14 @@ def is_goal_constrained(goal_loc, timestep, constraint_table):
     """
     checks if there's a constraint on the goal in the future.
     goal_loc            - goal location
-    timestep           - current timestep
+    timestep            - current timestep
     constraint_table    - generated constraint table for current agent
     """
-    constraint_table = {t: c for t, c in constraint_table.items() if t > timestep}
-    for t in constraint_table:
-        for c in constraint_table[t]:
-            if [goal_loc] == c['loc']:
-                return True
+    constraints = [c for t, c in constraint_table.items() if t > timestep]
+    constraints = flatten_constraints(constraints)
+    for c in constraints:
+        if [goal_loc] == c['loc']:
+            return True
     return False
 
 
