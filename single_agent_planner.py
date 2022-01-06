@@ -98,14 +98,14 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
     return False
 
 
-def is_goal_constrained(goal_loc, timestamp, constraint_table):
+def is_goal_constrained(goal_loc, timestep, constraint_table):
     """
     checks if there's a constraint on the goal in the future.
     goal_loc            - goal location
-    timestamp           - current timestamp
+    timestep           - current timestep
     constraint_table    - generated constraint table for current agent
     """
-    constraint_table = {t: c for t, c in constraint_table.items() if t > timestamp}
+    constraint_table = {t: c for t, c in constraint_table.items() if t > timestep}
     for t in constraint_table:
         for c in constraint_table[t]:
             if [goal_loc] == c['loc']:

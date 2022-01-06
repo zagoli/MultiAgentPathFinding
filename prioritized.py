@@ -30,25 +30,6 @@ class PrioritizedPlanningSolver(object):
         result = []
         constraints = []
 
-        # example of constraint for task 1.2
-        constraints.append(
-            {'agent': 0,
-             'loc': [(1, 5)],
-             'timestep': 4}
-        )
-        # constraint for task 1.3
-        constraints.append(
-            {'agent': 1,
-             'loc': [(1, 2), (1, 3)],
-             'timestep': 1}
-        )
-        # example of constraint for task 1.4
-        constraints.append(
-            {'agent': 0,
-             'loc': [(1, 5)],
-             'timestep': 10}
-        )
-
         for i in range(self.num_of_agents):  # Find path for each agent
             path = a_star(self.my_map, self.starts[i], self.goals[i], self.heuristics[i], i, constraints)
             if path is None:
@@ -63,6 +44,16 @@ class PrioritizedPlanningSolver(object):
             #            * constraints: array of constraints to consider for future A* searches
 
             ##############################
+
+            for time, loc in enumerate(path):
+                # create a new constraint whith the current path location for all agents except the current one
+                for a in range(self.num_of_agents):
+                    if a != i:
+                        constraints.append({
+                            'agent': a,
+                            'loc': [loc],
+                            'timestep': time
+                        })
 
         self.CPU_time = timer.time() - start_time
 
