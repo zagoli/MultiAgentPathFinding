@@ -20,3 +20,9 @@ Per ora gli unici tipi di constraint considerati sono vertex constraints.
 Aggiunto il support per gli edge constraint: l'unica funzione modificata
 è is_constrained, che data la posizione corrente, futura e il timestamp
 verifica se il nodo viola almeno uno dei due tipi di constraint.
+#### Task 1.4
+Viene aggiunto un controllo per verificare se il nodo raggiunto è di goal: 
+ora non basta raggiungere la posizione finale, è anche necessario che la posizione
+finale non compaia in nessun constraint dal timestamp corrente in poi.
+Per verificarlo viene creata la funzione is_goal_constrained, che verifica tutti i
+constraint dei timestamp futuri.
