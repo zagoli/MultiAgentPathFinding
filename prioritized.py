@@ -49,11 +49,22 @@ class PrioritizedPlanningSolver(object):
                 # create a new constraint whith the current path location for all agents except the current one
                 for a in range(self.num_of_agents):
                     if a != i:
+                        # vertex constraint
                         constraints.append({
                             'agent': a,
                             'loc': [loc],
                             'timestep': time
                         })
+                        # edge constraint
+                        # the agent can't be at the last position to add an edge constraint
+                        if time < len(path) - 1:
+                            # next location in path
+                            nextloc = path[path.index(loc) + 1]
+                            constraints.append({
+                                'agent': a,
+                                'loc': [nextloc, loc],
+                                'timestep': time + 1
+                            })
 
         self.CPU_time = timer.time() - start_time
 
