@@ -50,18 +50,17 @@ def detect_collisions(paths):
     #           causing the collision, and the timestep at which the collision occurred.
     #           You should use your detect_collision function to find a collision between two robots.
     collisions = []
-    for path1 in paths:
-        for path2 in paths:
-            if path1 != path2:
-                coll_data = detect_collision(path1, path2)
-                # if coll_data is not None (collision detected)
-                if coll_data:
-                    collisions.append({
-                        'a1': paths.index(path1),
-                        'a2': paths.index(path2),
-                        'loc': coll_data[0],  # vertex or edge
-                        'timestep': coll_data[1]  # timestep
-                    })
+    for i in range(len(paths)):
+        for j in range(i+1, len(paths)):
+            coll_data = detect_collision(paths[i], paths[j])
+            # if coll_data is not None (collision detected)
+            if coll_data:
+                collisions.append({
+                    'a1': i,
+                    'a2': j,
+                    'loc': coll_data[0],  # vertex or edge
+                    'timestep': coll_data[1]  # timestep
+                })
     return collisions
 
 
