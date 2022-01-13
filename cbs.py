@@ -32,14 +32,14 @@ def detect_collision(pathA, pathB):
         pos2 = get_location(path2, t)
         if pos1 == pos2:
             # we return the vertex and the timestep causing the collision
-            return [pos1], t
+            return [pos1], t, 'vertex'
         # check for edge collision (not if we are in the last timestep)
         if t < length - 1:
             next_pos1 = get_location(path1, t + 1)
             next_pos2 = get_location(path2, t + 1)
             if pos1 == next_pos2 and pos2 == next_pos1:
                 # we return the edge and timestep causing the collision
-                return [pos1, next_pos1], t + 1
+                return [pos1, next_pos1], t + 1, 'edge'
     return None
 
 
@@ -59,7 +59,8 @@ def detect_collisions(paths):
                     'a1': i,
                     'a2': j,
                     'loc': coll_data[0],  # vertex or edge
-                    'timestep': coll_data[1]  # timestep
+                    'timestep': coll_data[1],  # timestep
+                    'type': coll_data[2]
                 })
     return collisions
 
@@ -73,8 +74,35 @@ def standard_splitting(collision):
     #           Edge collision: the first constraint prevents the first agent to traverse the specified edge at the
     #                          specified timestep, and the second constraint prevents the second agent to traverse the
     #                          specified edge at the specified timestep
-
-    pass
+    # in this case, we can ignore final as all the paths are normalized
+    constraints = []
+    if collision['type'] == 'vertex':
+        constraints.append({
+            'agent': collision['a1'],
+            'loc': collision['loc'],
+            'timestep': collision['timestep'],
+            'final': False
+        })
+        constraints.append({
+            'agent': collision['a2'],
+            'loc': collision['loc'],
+            'timestep': collision['timestep'],
+            'final': False
+        })
+    elif collision['type'] == 'edge':
+        constraints.append({
+            'agent': collision['a1'],
+            'loc': collision['loc'],
+            'timestep': collision['timestep'],
+            'final': False
+        })
+        constraints.append({
+            'agent': collision['a2'],
+            'loc': reversed(collision['loc']),
+            'timestep': collision['timestep'],
+            'final': False
+        })
+    return constraints
 
 
 def disjoint_splitting(collision):
