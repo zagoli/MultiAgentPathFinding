@@ -17,7 +17,6 @@ def normalize_paths(pathA, pathB):
     return path1, path2
 
 
-# this function detects if an agent collides with another after one of the two reached the goal too
 def detect_collision(pathA, pathB):
     ##############################
     # Task 3.1: Return the first collision that occurs between two robot paths (or None if there is no collision)
@@ -25,6 +24,7 @@ def detect_collision(pathA, pathB):
     #           A vertex collision occurs if both robots occupy the same location at the same timestep
     #           An edge collision occurs if the robots swap their location at the same timestep.
     #           You should use "get_location(path, t)" to get the location of a robot at time t.
+    # this function detects if an agent collides with another even after one of the two reached the goal
     path1, path2 = normalize_paths(pathA, pathB)
     length = len(path1)
     for t in range(length):
