@@ -1,7 +1,8 @@
 import time as timer
 import heapq
-import random
 from single_agent_planner import compute_heuristics, a_star, get_location, get_sum_of_cost
+
+DEBUG = False
 
 
 def normalize_paths(pathA, pathB):
@@ -51,7 +52,7 @@ def detect_collisions(paths):
     #           You should use your detect_collision function to find a collision between two robots.
     collisions = []
     for i in range(len(paths)):
-        for j in range(i+1, len(paths)):
+        for j in range(i + 1, len(paths)):
             coll_data = detect_collision(paths[i], paths[j])
             # if coll_data is not None (collision detected)
             if coll_data:
@@ -98,7 +99,12 @@ def standard_splitting(collision):
         })
         constraints.append({
             'agent': collision['a2'],
-            'loc': reversed(collision['loc']),
+            # TODO: remove this
+            # 'reversed' returns an iterator, not a list. This caused a bug. This bug was not in the algorithm,
+            # so I wasted a lot of time questioning what was wrong with it. The fact that python is not strongly typed
+            # leads to bugs like this, they are horrible and nearly impossible (nor funny) to find. I wrote this
+            # because now I'm angry.
+            'loc': list(reversed(collision['loc'])),
             'timestep': collision['timestep'],
             'final': False
         })
@@ -147,13 +153,15 @@ class CBSSolver(object):
 
     def push_node(self, node):
         heapq.heappush(self.open_list, (node['cost'], len(node['collisions']), self.num_of_generated, node))
-        print("Generate node {}".format(self.num_of_generated))
+        if DEBUG:
+            print("Generate node {}".format(self.num_of_generated))
         self.num_of_generated += 1
 
     def pop_node(self):
         _, _, id, node = heapq.heappop(self.open_list)
-        print("Expand node {}".format(id))
-        self.num_of_expanded += 1
+        if DEBUG:
+            print("Expand node {}".format(id))
+            self.num_of_expanded += 1
         return node
 
     def find_solution(self, disjoint=True):
@@ -185,11 +193,13 @@ class CBSSolver(object):
         self.push_node(root)
 
         # Task 3.1: Testing
-        print(root['collisions'])
+        if DEBUG:
+            print(root['collisions'])
 
         # Task 3.2: Testing
-        for collision in root['collisions']:
-            print(standard_splitting(collision))
+        if DEBUG:
+            for collision in root['collisions']:
+                print(standard_splitting(collision))
 
         ##############################
         # Task 3.3: High-Level Search
@@ -200,8 +210,35 @@ class CBSSolver(object):
         #                standard_splitting function). Add a new child node to your open list for each constraint
         #           Ensure to create a copy of any objects that your child nodes might inherit
 
-        self.print_results(root)
-        return root['paths']
+        while self.open_list:
+            p = self.pop_node()
+            # if there are no collisions, we found a solution
+            if not p['collisions']:
+                self.print_results(p)
+                return p['paths']
+            else:
+                # we choose a collision and turn it into constraints
+                collision = p['collisions'][0]
+                constraints = standard_splitting(collision)
+                for c in constraints:
+                    q = {'cost': 0,
+                         'constraints': [*p['constraints'], c],  # all constraints in p plus c
+                         'paths': p['paths'].copy(),
+                         'collisions': []}
+                    agent = c['agent']
+                    path = a_star(self.my_map, self.starts[agent], self.goals[agent], self.heuristics[agent],
+                                  agent, q['constraints'])
+                    # DEBUG
+                    print("Constraints: {}".format(q['constraints']))
+                    print("Path: {}".format(path))
+                    # if path not empty
+                    if path:
+                        q['paths'][agent] = path
+                        q['collisions'] = detect_collisions(q['paths'])
+                        q['cost'] = get_sum_of_cost(q['paths'])
+                        self.push_node(q)
+                    else:
+                        raise BaseException('No solutions')
 
     def print_results(self, node):
         print("\n Found a solution! \n")
