@@ -1,3 +1,4 @@
+import random
 import time as timer
 import heapq
 from single_agent_planner import compute_heuristics, a_star, get_location, get_sum_of_cost
@@ -99,11 +100,7 @@ def standard_splitting(collision):
         })
         constraints.append({
             'agent': collision['a2'],
-            # TODO: remove this
-            # 'reversed' returns an iterator, not a list. This caused a bug. This bug was not in the algorithm,
-            # so I wasted a lot of time questioning what was wrong with it. The fact that python is not strongly typed
-            # leads to bugs like this, they are horrible and nearly impossible (nor funny) to find. I wrote this
-            # because now I'm angry.
+            # revesred returns an iterator. In python list == iterator returns false, not an error: nasty bug
             'loc': list(reversed(collision['loc'])),
             'timestep': collision['timestep'],
             'final': False
@@ -218,7 +215,7 @@ class CBSSolver(object):
                 return p['paths']
             else:
                 # we choose a collision and turn it into constraints
-                collision = p['collisions'][0]
+                collision = random.choice(p['collisions'])
                 constraints = standard_splitting(collision)
                 for c in constraints:
                     q = {'cost': 0,
@@ -228,9 +225,6 @@ class CBSSolver(object):
                     agent = c['agent']
                     path = a_star(self.my_map, self.starts[agent], self.goals[agent], self.heuristics[agent],
                                   agent, q['constraints'])
-                    # DEBUG
-                    print("Constraints: {}".format(q['constraints']))
-                    print("Path: {}".format(path))
                     # if path not empty
                     if path:
                         q['paths'][agent] = path
